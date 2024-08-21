@@ -1,76 +1,97 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { CldUploadWidget } from "next-cloudinary"
 import { ImagePlus, Trash } from "lucide-react"
 import Image from "next/image"
 
+interface CloudinaryUploadResult {
+  info: {
+    secure_url: string
+  }
+}
+
 interface ImageUploadProps {
-  disabled?: boolean
-  onChange: (value: string) => void
-  onRemove: (value: string) => void
   value: string[]
+  onChange: (url: string) => void
+  onRemove: (url: string) => void
+  disabled?: boolean
 }
 
 const ImageUpload: React.FC<ImageUploadProps> = ({
-  disabled,
+  value,
   onChange,
   onRemove,
-  value,
+  disabled = false,
 }) => {
-  const [isMounted, setIsMounted] = useState(false)
+  const [images, setImages] = useState<string[]>([])
+  const [uploading, setUploading] = useState(false)
 
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
+  const handleUploadSuccess = (result: CloudinaryUploadResult) => {
+    if (result?.info?.secure_url) {
+      setImages((prevImages) => [...prevImages, result.info.secure_url])
+      onChange(result.info.secure_url)
+    }
+  }
 
-  if (!isMounted) {
-    return null
+  const removeImage = (index: number) => {
+    const url = value[index]
+    onRemove(url)
+    setImages((prevImages) => prevImages.filter((_, i) => i !== index))
   }
 
   return (
-    <div>
-      <div className="mb-4 flex items-center gap-4">
-        {value.map((url) => (
+    <div className="space-y-4">
+      <div className="flex flex-wrap gap-4">
+        {value.map((url, index) => (
           <div
-            key={url}
-            className="relative w-[200px] h-[200px] rounded-md overflow-hidden"
+            key={index}
+            className="relative w-[150px] h-[150px] rounded-md overflow-hidden border border-gray-300"
           >
-            <div className="z-10 absolute top-2 right-2">
-              <Button
-                type="button"
-                onClick={() => onRemove(url)}
-                variant="destructive"
-                size="icon"
-              >
-                <Trash className="h-4 w-4" />
-              </Button>
-            </div>
-            <Image fill className="object-cover" alt="Image" src={url} />
+            <Image
+              src={url}
+              alt={`Uploaded image ${index + 1}`}
+              fill
+              className="object-cover"
+            />
+            <Button
+              variant="destructive"
+              size="icon"
+              className="absolute top-2 right-2 bg-white border border-gray-300 hover:bg-gray-200"
+              onClick={() => removeImage(index)}
+              disabled={uploading || disabled}
+            >
+              <Trash className="h-4 w-4 text-red-500" />
+            </Button>
           </div>
         ))}
       </div>
+
       <CldUploadWidget
         uploadPreset="b0axqvqe"
         onSuccess={(result, { widget }) => {
-          onChange(result?.info?.secure_url)
+          handleUploadSuccess(result as CloudinaryUploadResult)
           widget.close()
         }}
-      >
-        {({ open }) => {
-          return (
-            <Button
-              type="button"
-              disabled={disabled}
-              variant="secondary"
-              onClick={() => open()}
-            >
-              <ImagePlus className="h-4 w-4 mr-2" />
-              Upload an image
-            </Button>
-          )
+        options={{
+          multiple: true,
+          maxFiles: 5,
+          showAdvancedOptions: false,
         }}
+      >
+        {({ open }) => (
+          <Button
+            type="button"
+            disabled={uploading || disabled}
+            variant="secondary"
+            onClick={() => open()}
+            className="flex items-center gap-2 p-2 border border-gray-300 rounded-md hover:bg-gray-100 transition"
+          >
+            <ImagePlus className="h-5 w-5" />
+            Upload Images
+          </Button>
+        )}
       </CldUploadWidget>
     </div>
   )

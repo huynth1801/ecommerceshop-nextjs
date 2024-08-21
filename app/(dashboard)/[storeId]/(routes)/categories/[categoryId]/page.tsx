@@ -2,7 +2,7 @@ import prismadb from "@/lib/prismadb"
 import React from "react"
 import { CategoryForm } from "./components/category-form"
 
-const BillboardPage = async ({
+const CategoryPage = async ({
   params,
 }: {
   params: { categoryId: string; storeId: string }
@@ -27,4 +27,4 @@ const BillboardPage = async ({
   )
 }
 
-export default BillboardPage
+export default CategoryPage
