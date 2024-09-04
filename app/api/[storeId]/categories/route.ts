@@ -63,15 +63,15 @@ export async function GET(
       return new NextResponse("Store id is required", { status: 400 })
     }
 
-    const size = await prismadb.size.findMany({
+    const category = await prismadb.category.findMany({
       where: {
         storeId: params.storeId,
       },
     })
 
-    return NextResponse.json(size)
+    return NextResponse.json(category)
   } catch (error) {
-    console.error("[SIZES_GET]", error)
+    console.error("[CATEGORIES_GET]", error)
     return new NextResponse("Internal error", { status: 500 })
   }
 }

@@ -1,9 +1,9 @@
 import React from "react"
 import { format } from "date-fns"
 import { BillboardClient } from "./components/client"
-import prismadb from "@/lib/prismadb"
-import { BillboardColumn } from "./components/columns"
 
+import { BillboardColumn } from "./components/columns"
+import prismadb from "@/lib/prismadb"
 const BillboardPage = async ({ params }: { params: { storeId: string } }) => {
   const billboards = await prismadb.billboard.findMany({
     where: {
