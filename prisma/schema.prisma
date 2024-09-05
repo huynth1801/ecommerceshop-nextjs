@@ -1,105 +1,99 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
   relationMode = "prisma"
 }
 
 model Store {
-  id      String   @id  @default(uuid())
-  name    String
-  userId  String
+  id        String      @id @default(uuid())
+  name      String
+  userId    String
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
   billboard Billboard[] @relation("StoreToBillboard")
   category  Category[]  @relation("StoreToCategory")
-  size    Size[]     @relation("StoreToSize")
-  color   Color[]    @relation("StoreToColor")
-  product Product[]   @relation("StoreToProduct")
-  order   Order[]     @relation("StoreToOrder")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  size      Size[]      @relation("StoreToSize")
+  color     Color[]     @relation("StoreToColor")
+  product   Product[]   @relation("StoreToProduct")
+  order     Order[]     @relation("StoreToOrder")
 }
 
 model Billboard {
-  id      String @id @default(uuid())
-  storeId String 
-  store   Store @relation("StoreToBillboard", fields: [storeId], references: [id])
-  label   String
-  imageUrl String
+  id        String     @id @default(uuid())
+  storeId   String
+  label     String
+  imageUrl  String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  store     Store      @relation("StoreToBillboard", fields: [storeId], references: [id])
   category  Category[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
   @@index([storeId])
 }
 
 model Category {
-  id String @id @default(uuid())
-  storeId String
-  store Store @relation("StoreToCategory", fields: [storeId], references: [id])
+  id          String    @id @default(uuid())
+  storeId     String
   billboardId String
-  billboard Billboard @relation(fields: [billboardId], references: [id])
-  product   Product[] @relation("CategoryToProduct")
-  name  String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  name        String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  store       Store     @relation("StoreToCategory", fields: [storeId], references: [id])
+  billboard   Billboard @relation(fields: [billboardId], references: [id])
+  product     Product[] @relation("CategoryToProduct")
 
   @@index([storeId])
   @@index([billboardId])
 }
 
 model Size {
-  id String   @id @default(uuid())
-  storeId String
-  store Store @relation("StoreToSize", fields: [storeId], references: [id])
-  name  String
-  value String
-  products  Product[]
+  id        String    @id @default(uuid())
+  storeId   String
+  name      String
+  value     String
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+  store     Store     @relation("StoreToSize", fields: [storeId], references: [id])
+  products  Product[]
 
   @@index([storeId])
 }
 
 model Color {
-  id String   @id @default(uuid())
-  storeId String
-  store Store @relation("StoreToColor", fields: [storeId], references: [id])
-  name  String
-  value String
-  products Product[]
+  id        String    @id @default(uuid())
+  storeId   String
+  name      String
+  value     String
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+  store     Store     @relation("StoreToColor", fields: [storeId], references: [id])
+  products  Product[]
 
   @@index([storeId])
 }
 
 model Product {
-  id  String  @id   @default(uuid())
-  storeId String
-  store Store   @relation("StoreToProduct", fields: [storeId], references: [id])
-  categoryId  String
-  category  Category  @relation("CategoryToProduct", fields: [categoryId], references: [id])
-  name    String
-  price Decimal
-  isFeatured  Boolean @default(false)
-  isArchived  Boolean @default(false)
-  sizeId    String
-  size Size   @relation(fields: [sizeId], references: [id])
-  colorId   String
-  color Color   @relation(fields: [colorId], references: [id])
-  images Image[]
-  orderItem OrderItem[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime  @updatedAt
+  id         String      @id @default(uuid())
+  storeId    String
+  categoryId String
+  name       String
+  price      Decimal
+  isFeatured Boolean     @default(false)
+  isArchived Boolean     @default(false)
+  sizeId     String
+  colorId    String
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  store      Store       @relation("StoreToProduct", fields: [storeId], references: [id])
+  category   Category    @relation("CategoryToProduct", fields: [categoryId], references: [id])
+  size       Size        @relation(fields: [sizeId], references: [id])
+  color      Color       @relation(fields: [colorId], references: [id])
+  images     Image[]
+  orderItem  OrderItem[]
 
   @@index([storeId])
   @@index([categoryId])
@@ -108,35 +102,35 @@ model Product {
 }
 
 model Image {
-  id  String  @id   @default(uuid())
+  id        String   @id @default(uuid())
   productId String
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-  url String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  url       String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@index([productId])
 }
 
 model Order {
-  id String @id @default(uuid())
-  storeId String
-  store Store @relation("StoreToOrder", fields: [storeId], references: [id])
+  id         String      @id @default(uuid())
+  storeId    String
+  isPaid     Boolean     @default(false)
+  phone      String      @default("")
+  address    String      @default("")
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  store      Store       @relation("StoreToOrder", fields: [storeId], references: [id])
   orderItems OrderItem[]
-  isPaid Boolean @default(false)
-  phone  String   @default("")
-  address String  @default("")
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
 
   @@index([storeId])
 }
 
 model OrderItem {
-  id  String  @id   @default(uuid())
-  orderId String
-  order Order   @relation(fields: [orderId], references: [id])
+  id        String  @id @default(uuid())
+  orderId   String
   productId String
+  order     Order   @relation(fields: [orderId], references: [id])
   product   Product @relation(fields: [productId], references: [id])
 
   @@index([orderId])
